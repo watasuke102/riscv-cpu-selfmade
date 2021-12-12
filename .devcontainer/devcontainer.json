@@ -1,0 +1,7 @@
+{
+  "name": "chisel",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "chisel",
+  "workspaceFolder": "/src",
+  "shutdownAction": "stopCompose"
+}

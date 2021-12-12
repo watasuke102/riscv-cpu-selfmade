@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  chisel:
+    build: .
+    command: sleep infinity
+    volumes:
+      - ../src:/src
+    environment:
+      SHELL: "/bin/bash"
