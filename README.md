@@ -1,1 +1,3 @@
 「RISC-VとChiselで学ぶ はじめてのCPU自作」（9784297123055）のためのリポジトリです
+
+Remote Containerな環境が欲しい人はbaseブランチをforkしてください
