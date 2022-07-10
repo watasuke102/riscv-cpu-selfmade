@@ -1,11 +1,23 @@
 # from https://github.com/chadyuu/riscv-chisel-book/blob/master/dockerfile
 # Copyright (c) 2021, chadyuu All rights reserved.
 FROM ubuntu:18.04
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
 
 ENV RISCV=/opt/riscv
 ENV PATH=$RISCV/bin:$PATH
 ENV MAKEFLAGS=-j4
 WORKDIR $RISCV
+
+# create user
+# https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user#_creating-a-nonroot-user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
 
 # 基本ツールのインストール
 RUN apt update && \

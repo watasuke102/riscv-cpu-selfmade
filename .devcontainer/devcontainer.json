@@ -3,9 +3,7 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "chisel",
   "workspaceFolder": "/workdir",
-  "extensions": [
-    "aaronduino.chisel",
-    "scalameta.metals"
-  ],
+  "extensions": ["aaronduino.chisel", "scalameta.metals"],
+  "remoteUser": "vscode",
   "shutdownAction": "stopCompose"
 }
