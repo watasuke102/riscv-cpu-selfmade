@@ -2,6 +2,10 @@
   "name": "chisel",
   "dockerComposeFile": "docker-compose.yml",
   "service": "chisel",
-  "workspaceFolder": "/src",
+  "workspaceFolder": "/workdir",
+  "extensions": [
+    "aaronduino.chisel",
+    "scalameta.metals"
+  ],
   "shutdownAction": "stopCompose"
 }

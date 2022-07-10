@@ -5,6 +5,6 @@ services:
     build: .
     command: sleep infinity
     volumes:
-      - ../src:/src
+      - ..:/workdir
     environment:
       SHELL: "/bin/bash"
