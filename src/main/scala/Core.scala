@@ -2,11 +2,13 @@ package mycpu
 
 import chisel3._
 import chisel3.util._
+import common._
 import common.Consts._
 
 class Core extends Module {
   val io = IO(new Bundle {
     val imem = Flipped(new ImemPortIo())
+    val dmem = Flipped(new DmemPortIo())
     val exit = Output(Bool())
   })
 
@@ -27,14 +29,36 @@ class Core extends Module {
   val rs2_data =
     Mux(rs2_addr =/= 0.U(WORD_LEN.W), regfile(rs2_addr), 0.U(WORD_LEN.W))
 
+  val imm_i      = inst(31, 20)
+  val imm_i_sext = Cat(Fill(20, imm_i(11)), imm_i)
+
+  // EX (EXecute)
+  val alu_out = MuxCase(
+    0.U(WORD_LEN.W),
+    Seq(
+      (inst === Instructions.LW) -> (rs1_data + imm_i_sext)
+    )
+  )
+
+  // MEM (MEMory access)
+  io.dmem.addr := alu_out
+
+  // WB (Write Back)
+  val wb_data = io.dmem.rdata
+  when(inst === Instructions.LW) {
+    regfile(wb_addr) := wb_data
+  }
+
   // debug
-  io.exit := (inst === 0x34333231.U(WORD_LEN.W))
-  printf(p"pc_reg   : 0x${Hexadecimal(pc_reg)}\n")
-  printf(p"inst     : 0x${Hexadecimal(inst)}\n")
-  printf(p"rs1_addr :   ${rs1_addr}\n")
-  printf(p"rs2_addr :   ${rs2_addr}\n")
-  printf(p"wb_addr  :   ${wb_addr}\n")
-  printf(p"rs1_data : 0x${Hexadecimal(rs1_data)}\n")
-  printf(p"rs2_data : 0x${Hexadecimal(rs2_data)}\n")
+  io.exit := (inst === 0x14131211.U(WORD_LEN.W))
+  printf(p"pc_reg    : 0x${Hexadecimal(pc_reg)}\n")
+  printf(p"inst      : 0x${Hexadecimal(inst)}\n")
+  printf(p"rs1_addr  :   ${rs1_addr}\n")
+  printf(p"rs2_addr  :   ${rs2_addr}\n")
+  printf(p"wb_addr   :   ${wb_addr}\n")
+  printf(p"rs1_data  : 0x${Hexadecimal(rs1_data)}\n")
+  printf(p"rs2_data  : 0x${Hexadecimal(rs2_data)}\n")
+  printf(p"wb_data   : 0x${Hexadecimal(wb_data)}\n")
+  printf(p"dmem_addr :   ${io.dmem.addr}\n")
   printf(p"--------------------\n")
 }
