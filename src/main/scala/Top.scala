@@ -8,7 +8,7 @@ class Top extends Module {
     val exit = Output(Bool())
   })
 
-  val core = Module(new Core())
+  val core   = Module(new Core())
   val memory = Module(new Memory())
 
   core.io.imem <> memory.io.imem
