@@ -54,6 +54,9 @@ class Core extends Module {
   val imm_j = Cat(inst(31), inst(19, 12), inst(20), inst(30, 25), inst(24, 21))
   val imm_j_sext = Cat(Fill(11, imm_j(19)), imm_j, 0.U(1.U))
 
+  val imm_u         = Cat(inst(31, 12))
+  val imm_u_shifted = Cat(imm_u, Fill(12, 0.U))
+
   // format: off
   val csignals = ListLookup(
     inst,
@@ -94,6 +97,9 @@ class Core extends Module {
 
       Instructions.JAL   -> List(ALU_ADD,  OP1_PC,  OP2_IMJ, MEN_X, REN_S, WB_PC),
       Instructions.JALR  -> List(ALU_JALR, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_PC),
+
+      Instructions.LUI   -> List(ALU_ADD,  OP1_X,   OP2_IMU, MEN_X, REN_S, WB_ALU),
+      Instructions.AUIPC -> List(ALU_ADD,  OP1_PC,  OP2_IMU, MEN_X, REN_S, WB_ALU),
     )
   )
   // format: on
@@ -116,6 +122,7 @@ class Core extends Module {
       (op2_sel === OP2_IMI) -> imm_i_sext,
       (op2_sel === OP2_IMS) -> imm_s_sext,
       (op2_sel === OP2_IMJ) -> imm_j_sext,
+      (op2_sel === OP2_IMU) -> imm_u_shifted,
     )
   )
 
