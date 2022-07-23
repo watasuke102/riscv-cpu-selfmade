@@ -53,6 +53,13 @@ class Core extends Module {
       Instructions.ORI  -> List(ALU_OR,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
       Instructions.XOR  -> List(ALU_XOR, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
       Instructions.XORI -> List(ALU_XOR, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+
+      Instructions.SLL  -> List(ALU_SLL, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SRL  -> List(ALU_SRL, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SRA  -> List(ALU_SRL, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SLLI -> List(ALU_SLL, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.SRLI -> List(ALU_SRL, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.SRAI -> List(ALU_SRL, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
     )
   )
   // format: on
@@ -85,10 +92,9 @@ class Core extends Module {
       (exe_fun === ALU_AND) -> (op1_data & op2_data),
       (exe_fun === ALU_OR)  -> (op1_data | op2_data),
       (exe_fun === ALU_XOR) -> (op1_data ^ op2_data),
-      (inst === Instructions.LW || inst === Instructions.ADDI) -> (rs1_data + imm_i_sext),
-      (inst === Instructions.SW)  -> (rs1_data + imm_s_sext),
-      (inst === Instructions.ADD) -> (rs1_data + rs2_data),
-      (inst === Instructions.SUB) -> (rs1_data - rs2_data)
+      (exe_fun === ALU_SLL) -> (op1_data << op2_data(4, 0))(31, 0),
+      (exe_fun === ALU_SRL) -> (op1_data >> op2_data(4, 0)).asUInt(),
+      (exe_fun === ALU_SRA) -> (op1_data.asSInt() >> op2_data(4, 0)).asUInt
     )
   )
 
