@@ -26,7 +26,7 @@ class Memory extends Module {
 
   // 16KiB register
   val mem = Mem(16384, UInt(8.W))
-  loadMemoryFromFile(mem, "src/hex/sw.hex")
+  loadMemoryFromFile(mem, "src/riscv/rv32ui-p-add.hex")
 
   io.imem.inst := Cat(
     mem(io.imem.addr + 3.U(WORD_LEN.W)),
