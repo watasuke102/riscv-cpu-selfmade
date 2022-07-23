@@ -13,7 +13,8 @@ class Core extends Module {
     val gp   = Output(UInt(WORD_LEN.W))
   })
 
-  val regfile = Mem(32, UInt(WORD_LEN.W))
+  val regfile     = Mem(32, UInt(WORD_LEN.W))
+  val csr_regfile = Mem(4096, UInt(WORD_LEN.W))
 
   // IF (Instruction Fetch)
   val pc_reg = RegInit(START_ADDR) // count up each cycles
@@ -179,7 +180,6 @@ class Core extends Module {
   io.dmem.wdata := rs2_data
 
   // CSR
-  val csr_regfile = Mem(4096, UInt(WORD_LEN.W))
   val csr_addr  = Mux(csr_cmd === CSR_E, 0x342.U(CSR_ADDR_LEN.W), inst(31, 20))
   val csr_rdata = csr_regfile(csr_addr)
   val csr_wdata = MuxCase(
