@@ -35,10 +35,56 @@ class Core extends Module {
   val imm_s      = Cat(inst(31, 25), inst(11, 7))
   val imm_s_sext = Cat(Fill(20, imm_s(11)), imm_s)
 
+  // format: off
+  val csignals = ListLookup(
+    inst,
+    List(ALU_X, OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X),
+    Array(
+      Instructions.LW   -> List(ALU_ADD, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_MEM),
+      Instructions.SW   -> List(ALU_ADD, OP1_RS1, OP2_IMS, MEN_S, REN_X, WB_X),
+
+      Instructions.ADD  -> List(ALU_ADD, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.ADDI -> List(ALU_ADD, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.SUB  -> List(ALU_SUB, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+
+      Instructions.AND  -> List(ALU_AND, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.ANDI -> List(ALU_AND, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.OR   -> List(ALU_OR,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.ORI  -> List(ALU_OR,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.XOR  -> List(ALU_XOR, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.XORI -> List(ALU_XOR, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+    )
+  )
+  // format: on
+
+  val exe_fun :: op1_sel :: op2_sel :: mem_wen :: rf_wen :: wb_sel :: Nil =
+    csignals
+
+  val op1_data = MuxCase(
+    0.U,
+    Seq(
+      (op1_sel === OP1_RS1) -> rs1_data
+    )
+  )
+
+  val op2_data = MuxCase(
+    0.U(WORD_LEN),
+    Seq(
+      (op2_sel === OP2_RS2) -> rs2_data,
+      (op2_sel === OP2_IMI) -> imm_i_sext,
+      (op2_sel === OP2_IMS) -> imm_s_sext
+    )
+  )
+
   // EX (EXecute)
   val alu_out = MuxCase(
     0.U(WORD_LEN.W),
     Seq(
+      (exe_fun === ALU_ADD) -> (op1_data + op2_data),
+      (exe_fun === ALU_SUB) -> (op1_data - op2_data),
+      (exe_fun === ALU_AND) -> (op1_data & op2_data),
+      (exe_fun === ALU_OR)  -> (op1_data | op2_data),
+      (exe_fun === ALU_XOR) -> (op1_data ^ op2_data),
       (inst === Instructions.LW || inst === Instructions.ADDI) -> (rs1_data + imm_i_sext),
       (inst === Instructions.SW)  -> (rs1_data + imm_s_sext),
       (inst === Instructions.ADD) -> (rs1_data + rs2_data),
@@ -49,19 +95,17 @@ class Core extends Module {
   // MEM (MEMory access)
   io.dmem.addr := alu_out
 
-  io.dmem.wen   := (inst === Instructions.SW)
+  io.dmem.wen   := mem_wen
   io.dmem.wdata := rs2_data
 
   // WB (Write Back)
   val wb_data = MuxCase(
     alu_out,
     Seq(
-      (inst === Instructions.LW) -> io.dmem.rdata
+      (wb_sel === WB_MEM) -> io.dmem.rdata
     )
   )
-  when(
-    inst === Instructions.LW || inst === Instructions.ADD || inst === Instructions.ADDI || inst === Instructions.SUB
-  ) {
+  when(rf_wen === REN_S) {
     regfile(wb_addr) := wb_data
   }
 
