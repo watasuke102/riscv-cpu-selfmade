@@ -40,26 +40,31 @@ class Core extends Module {
     inst,
     List(ALU_X, OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X),
     Array(
-      Instructions.LW   -> List(ALU_ADD, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_MEM),
-      Instructions.SW   -> List(ALU_ADD, OP1_RS1, OP2_IMS, MEN_S, REN_X, WB_X),
-
-      Instructions.ADD  -> List(ALU_ADD, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-      Instructions.ADDI -> List(ALU_ADD, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
-      Instructions.SUB  -> List(ALU_SUB, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-
-      Instructions.AND  -> List(ALU_AND, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-      Instructions.ANDI -> List(ALU_AND, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
-      Instructions.OR   -> List(ALU_OR,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-      Instructions.ORI  -> List(ALU_OR,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
-      Instructions.XOR  -> List(ALU_XOR, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-      Instructions.XORI -> List(ALU_XOR, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
-
-      Instructions.SLL  -> List(ALU_SLL, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-      Instructions.SRL  -> List(ALU_SRL, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-      Instructions.SRA  -> List(ALU_SRL, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
-      Instructions.SLLI -> List(ALU_SLL, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
-      Instructions.SRLI -> List(ALU_SRL, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
-      Instructions.SRAI -> List(ALU_SRL, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.LW    -> List(ALU_ADD,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_MEM),
+      Instructions.SW    -> List(ALU_ADD,  OP1_RS1, OP2_IMS, MEN_S, REN_X, WB_X),
+                                           
+      Instructions.ADD   -> List(ALU_ADD,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.ADDI  -> List(ALU_ADD,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.SUB   -> List(ALU_SUB,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+                                           
+      Instructions.AND   -> List(ALU_AND,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.ANDI  -> List(ALU_AND,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.OR    -> List(ALU_OR,   OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.ORI   -> List(ALU_OR,   OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.XOR   -> List(ALU_XOR,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.XORI  -> List(ALU_XOR,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+                                           
+      Instructions.SLL   -> List(ALU_SLL,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SRL   -> List(ALU_SRL,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SRA   -> List(ALU_SRL,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SLLI  -> List(ALU_SLL,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.SRLI  -> List(ALU_SRL,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.SRAI  -> List(ALU_SRL,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+                                           
+      Instructions.SLT   -> List(ALU_SLT,  OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SLTU  -> List(ALU_SLTU, OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU),
+      Instructions.SLTI  -> List(ALU_SLT,  OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
+      Instructions.SLTIU -> List(ALU_SLTU, OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU),
     )
   )
   // format: on
@@ -94,7 +99,9 @@ class Core extends Module {
       (exe_fun === ALU_XOR) -> (op1_data ^ op2_data),
       (exe_fun === ALU_SLL) -> (op1_data << op2_data(4, 0))(31, 0),
       (exe_fun === ALU_SRL) -> (op1_data >> op2_data(4, 0)).asUInt(),
-      (exe_fun === ALU_SRA) -> (op1_data.asSInt() >> op2_data(4, 0)).asUInt
+      (exe_fun === ALU_SRA) -> (op1_data.asSInt() >> op2_data(4, 0)).asUInt,
+      (exe_fun === ALU_SLT) -> (op1_data.asSInt() < op2_data.asSInt()).asUInt(),
+      (exe_fun === ALU_SLT) -> (op1_data < op2_data).asUInt(),
     )
   )
 
