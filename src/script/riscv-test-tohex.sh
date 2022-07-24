@@ -2,12 +2,11 @@
 
 src=./share/riscv-tests/isa/rv32*i-p-*
 dst=./src/riscv
+script=$(cd $(dirname $0); pwd)
 
 for f in $src; do
   if [[ ! $f =~ "dump" ]]; then
     name="${f##*/}"
-    riscv64-unknown-elf-objcopy -O binary $f "$dst/$name.bin"
-    od -An -tx1 -w1 -v $dst/$name.bin > $dst/$name.hex   
-    rm -f $dst/$name.bin
+    bash $script/create-hex.sh $f $dst/$name.hex
   fi
 done
