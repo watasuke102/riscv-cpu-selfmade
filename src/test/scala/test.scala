@@ -7,12 +7,12 @@ import chiseltest._
 class HexTest extends FlatSpec with ChiselScalatestTester {
   "mycpu" should "work through hex" in {
     // c: instance of Top class
-    val file = "src/hex/ctest.hex"
+    val file = "src/riscv/rv32mi-p-breakpoint.hex"
     test(new Top(file)) { c =>
       while (!c.io.exit.peek().litToBoolean) {
         c.clock.step(1)
       }
-    // c.io.gp.expect(1.U)
+      c.io.gp.expect(1.U)
     }
   }
 }
