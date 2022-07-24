@@ -18,7 +18,7 @@ class DmemPortIo extends Bundle {
   val wdata = Input(UInt(WORD_LEN.W))
 }
 
-class Memory extends Module {
+class Memory(file: String) extends Module {
   val io = IO(new Bundle {
     val imem = new ImemPortIo()
     val dmem = new DmemPortIo()
@@ -26,7 +26,7 @@ class Memory extends Module {
 
   // 16KiB register
   val mem = Mem(16384, UInt(8.W))
-  loadMemoryFromFile(mem, "src/riscv/rv32ui-p-add.hex")
+  loadMemoryFromFile(mem, file)
 
   io.imem.inst := Cat(
     mem(io.imem.addr + 3.U(WORD_LEN.W)),
