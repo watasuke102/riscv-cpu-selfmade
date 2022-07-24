@@ -4,7 +4,7 @@ test:
 	sbt "testOnly mycpu.HexTest"
 
 riscv-test:
-	bash riscv-test-all.sh
+	bash -e riscv-test-all.sh
 
 make-riscv-test: 
 	sudo chown -R vscode:vscode /opt/riscv
