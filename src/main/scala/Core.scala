@@ -81,46 +81,47 @@ class Core extends Module {
   id_reg_inst := if_inst
 
   // ID (Instruction Decode)
-  val id_rs1_addr = id_reg_inst(19, 15)
-  val id_rs2_addr = id_reg_inst(24, 20)
-  val id_wb_addr  = id_reg_inst(11, 7)
+  val id_inst     = Mux((exe_br_flg || exe_jmp_flg), BUBBLE, id_reg_inst)
+  val id_rs1_addr = id_inst(19, 15)
+  val id_rs2_addr = id_inst(24, 20)
+  val id_wb_addr  = id_inst(11, 7)
   val id_rs1_data =
     Mux(id_rs1_addr =/= 0.U(WORD_LEN.W), regfile(id_rs1_addr), 0.U(WORD_LEN.W))
   val id_rs2_data =
     Mux(id_rs2_addr =/= 0.U(WORD_LEN.W), regfile(id_rs2_addr), 0.U(WORD_LEN.W))
 
-  val id_imm_i      = id_reg_inst(31, 20)
+  val id_imm_i      = id_inst(31, 20)
   val id_imm_i_sext = Cat(Fill(20, id_imm_i(11)), id_imm_i)
 
-  val id_imm_s      = Cat(id_reg_inst(31, 25), id_reg_inst(11, 7))
+  val id_imm_s      = Cat(id_inst(31, 25), id_inst(11, 7))
   val id_imm_s_sext = Cat(Fill(20, id_imm_s(11)), id_imm_s)
 
   val id_imm_b = Cat(
-    id_reg_inst(31),
-    id_reg_inst(7),
-    id_reg_inst(30, 25),
-    id_reg_inst(11, 8)
+    id_inst(31),
+    id_inst(7),
+    id_inst(30, 25),
+    id_inst(11, 8)
   )
   val id_imm_b_sext = Cat(Fill(19, id_imm_b(11)), id_imm_b, 0.U(1.U))
 
   val id_imm_j = Cat(
-    id_reg_inst(31),
-    id_reg_inst(19, 12),
-    id_reg_inst(20),
-    id_reg_inst(30, 25),
-    id_reg_inst(24, 21)
+    id_inst(31),
+    id_inst(19, 12),
+    id_inst(20),
+    id_inst(30, 25),
+    id_inst(24, 21)
   )
   val id_imm_j_sext = Cat(Fill(11, id_imm_j(19)), id_imm_j, 0.U(1.U))
 
-  val id_imm_u         = Cat(id_reg_inst(31, 12))
+  val id_imm_u         = Cat(id_inst(31, 12))
   val id_imm_u_shifted = Cat(id_imm_u, Fill(12, 0.U))
 
-  val id_imm_z      = Cat(id_reg_inst(19, 15))
+  val id_imm_z      = Cat(id_inst(19, 15))
   val id_imm_z_uext = Cat(Fill(27, 0.U), id_imm_z)
 
   // format: off
   val csignals = ListLookup(
-    id_reg_inst,
+    id_inst,
     List(ALU_X, OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X, CSR_X),
     Array(
       Instructions.LW     -> List(ALU_ADD,   OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_MEM, CSR_X),
@@ -198,7 +199,7 @@ class Core extends Module {
   )
 
   val id_csr_addr =
-    Mux(id_csr_cmd === CSR_E, 0x342.U(CSR_ADDR_LEN.W), id_reg_inst(31, 20))
+    Mux(id_csr_cmd === CSR_E, 0x342.U(CSR_ADDR_LEN.W), id_inst(31, 20))
 
   // for next
   exe_reg_pc            := id_reg_pc
@@ -310,15 +311,18 @@ class Core extends Module {
 
   // debug
   io.gp   := regfile(3)
-  io.exit := (if_inst === UNIMP)
+  // io.exit := (if_inst === UNIMP)
+  io.exit := (if_reg_pc === 0x44.U(WORD_LEN.W))
   printf(p"if_reg_pc        : 0x${Hexadecimal(if_reg_pc)}\n")
   printf(p"id_reg_pc        : 0x${Hexadecimal(id_reg_pc)}\n")
   printf(p"id_reg_inst      : 0x${Hexadecimal(id_reg_inst)}\n")
+  printf(p"id_inst          : 0x${Hexadecimal(id_inst)}\n")
   printf(p"exe_reg_pc       : 0x${Hexadecimal(exe_reg_pc)}\n")
   printf(p"exe_reg_op1_data : 0x${Hexadecimal(exe_reg_op1_data)}\n")
   printf(p"exe_reg_op2_data : 0x${Hexadecimal(exe_reg_op2_data)}\n")
   printf(p"exe_alu_out      : 0x${Hexadecimal(exe_alu_out)}\n")
   printf(p"mem_reg_pc       : 0x${Hexadecimal(mem_reg_pc)}\n")
   printf(p"mem_wb_data      : 0x${Hexadecimal(mem_wb_data)}\n")
+  printf(p"wb_reg_wb_data   : 0x${Hexadecimal(wb_reg_wb_data)}\n")
   printf(p"--------------------\n")
 }

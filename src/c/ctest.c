@@ -1,14 +1,25 @@
 #include <stdio.h>
 
 int main(void) {
-  const unsigned int x = 1;
-  const unsigned int y = 2;
-  unsigned int z = x+y;
-  if (z == 1) {
-    z = z + 1;
-  } else {
-    z = z + 2;
-  }
+  asm volatile("addi a0, x0, 1");
+  asm volatile("addi a1, x0, 2");
+  asm volatile("jal ra, jump");
+  
+  // should not execute
+  asm volatile("addi a0, x0, 2");
+  asm volatile("addi a1, x0, 3");
+
+  asm volatile("jump:");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("add a2, a0, a1");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+
   asm volatile("unimp");
   return 0;
 }
