@@ -79,6 +79,7 @@ class Core extends Module {
   // for next
   id_reg_pc   := if_reg_pc
   id_reg_inst := if_inst
+  id_reg_inst := Mux((exe_br_flg || exe_jmp_flg), BUBBLE, if_inst)
 
   // ID (Instruction Decode)
   val id_inst     = Mux((exe_br_flg || exe_jmp_flg), BUBBLE, id_reg_inst)
@@ -311,8 +312,7 @@ class Core extends Module {
 
   // debug
   io.gp   := regfile(3)
-  // io.exit := (if_inst === UNIMP)
-  io.exit := (if_reg_pc === 0x44.U(WORD_LEN.W))
+  io.exit := (if_inst === UNIMP)
   printf(p"if_reg_pc        : 0x${Hexadecimal(if_reg_pc)}\n")
   printf(p"id_reg_pc        : 0x${Hexadecimal(id_reg_pc)}\n")
   printf(p"id_reg_inst      : 0x${Hexadecimal(id_reg_inst)}\n")
