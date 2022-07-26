@@ -78,7 +78,6 @@ class Core extends Module {
 
   // for next
   id_reg_pc   := if_reg_pc
-  id_reg_inst := if_inst
   id_reg_inst := Mux((exe_br_flg || exe_jmp_flg), BUBBLE, if_inst)
 
   // ID (Instruction Decode)
@@ -86,6 +85,7 @@ class Core extends Module {
   val id_rs1_addr = id_inst(19, 15)
   val id_rs2_addr = id_inst(24, 20)
   val id_wb_addr  = id_inst(11, 7)
+  val mem_wb_data = Wire(UInt(WORD_LEN.W))
   val id_rs1_data =
     Mux(id_rs1_addr =/= 0.U(WORD_LEN.W), regfile(id_rs1_addr), 0.U(WORD_LEN.W))
   val id_rs2_data =
@@ -109,8 +109,7 @@ class Core extends Module {
     id_inst(31),
     id_inst(19, 12),
     id_inst(20),
-    id_inst(30, 25),
-    id_inst(24, 21)
+    id_inst(30, 21),
   )
   val id_imm_j_sext = Cat(Fill(11, id_imm_j(19)), id_imm_j, 0.U(1.U))
 
@@ -180,7 +179,7 @@ class Core extends Module {
     csignals
 
   val id_op1_data = MuxCase(
-    0.U,
+    0.U(WORD_LEN.W),
     Seq(
       (id_op1_sel === OP1_RS1) -> id_rs1_data,
       (id_op1_sel === OP1_PC)  -> id_reg_pc,
@@ -189,7 +188,7 @@ class Core extends Module {
   )
 
   val id_op2_data = MuxCase(
-    0.U(WORD_LEN),
+    0.U(WORD_LEN.W),
     Seq(
       (id_op2_sel === OP2_RS2) -> id_rs2_data,
       (id_op2_sel === OP2_IMI) -> id_imm_i_sext,
@@ -291,7 +290,7 @@ class Core extends Module {
     csr_regfile(mem_reg_csr_addr) := csr_wdata
   }
 
-  val mem_wb_data = MuxCase(
+  mem_wb_data := MuxCase(
     mem_reg_alu_out,
     Seq(
       (mem_reg_wb_sel === WB_MEM) -> io.dmem.rdata,
@@ -306,13 +305,14 @@ class Core extends Module {
   wb_reg_wb_data := mem_wb_data
 
   // WB (Write Back)
-  when(mem_reg_rf_wen === REN_S) {
-    regfile(mem_reg_wb_addr) := wb_reg_wb_data
+  when(wb_reg_rf_wen === REN_S) {
+    regfile(wb_reg_wb_addr) := wb_reg_wb_data
   }
 
   // debug
   io.gp   := regfile(3)
   io.exit := (if_inst === UNIMP)
+  // io.exit := (if_reg_pc >= 0x44.U(WORD_LEN.W))
   printf(p"if_reg_pc        : 0x${Hexadecimal(if_reg_pc)}\n")
   printf(p"id_reg_pc        : 0x${Hexadecimal(id_reg_pc)}\n")
   printf(p"id_reg_inst      : 0x${Hexadecimal(id_reg_inst)}\n")
@@ -321,8 +321,10 @@ class Core extends Module {
   printf(p"exe_reg_op1_data : 0x${Hexadecimal(exe_reg_op1_data)}\n")
   printf(p"exe_reg_op2_data : 0x${Hexadecimal(exe_reg_op2_data)}\n")
   printf(p"exe_alu_out      : 0x${Hexadecimal(exe_alu_out)}\n")
+  printf(p"mem_reg_alu_out  : 0x${Hexadecimal(mem_reg_alu_out)}\n")
   printf(p"mem_reg_pc       : 0x${Hexadecimal(mem_reg_pc)}\n")
   printf(p"mem_wb_data      : 0x${Hexadecimal(mem_wb_data)}\n")
   printf(p"wb_reg_wb_data   : 0x${Hexadecimal(wb_reg_wb_data)}\n")
+  printf(p"a0, a1, a2 = ${regfile(10)}, ${regfile(11)}, ${regfile(12)}\n")
   printf(p"--------------------\n")
 }
